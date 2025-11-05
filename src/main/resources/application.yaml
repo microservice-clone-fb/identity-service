@@ -10,7 +10,7 @@ spring:
     url: ${DB_URL:jdbc:postgresql://dpg-d45e3sv5r7bs73ag0opg-a.singapore-postgres.render.com:5432/clone_fb_identity}
     driverClassName: ${DB_DRIVER:org.postgresql.Driver}
     username: ${DB_USERNAME:user}
-    password: ${DB_PASSWORD:V1pI4T1SSv62ioLNFwIXNwyfhPpKeS2Hm}
+    password: ${DB_PASSWORD:V1pI4T1SSv62ioLNFwIXNwyfhPpKS2Hm}
   jpa:
     hibernate:
       ddl-auto: ${DB_DDL_AUTO:update}
