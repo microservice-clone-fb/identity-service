@@ -1,5 +1,5 @@
 server:
-  port: 5001
+  port: ${PORT}
   servlet:
     context-path: /identity
 
@@ -7,27 +7,39 @@ spring:
   application:
     name: identity-service
   datasource:
-    url: "jdbc:mysql://localhost:9002/clone_fb_identity"
-    driverClassName: "com.mysql.cj.jdbc.Driver"
-    username: root
-    password: root
+    url: ${DB_URL}
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${JPA_DDL_AUTO}
+    show-sql: ${JPA_SHOW_SQL}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
 
   kafka:
-    bootstrap-servers: localhost:9000
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 jwt:
-  signerKey: "1TjXchw5FloESb63Kc+DFhTARvpWL4jUGCwfGWxuG5SIf/1y/LgJxHnMqaF6A/ij"
-  valid-duration: 1800 # 30 min in seconds
-  refreshable-duration: 604800 # 7 days in seconds
+  signerKey: ${JWT_SIGNER_KEY}
+  valid-duration: ${JWT_VALID_DURATION} # 30 min in seconds
+  refreshable-duration: ${JWT_REFRESHABLE_DURATION} # 7 days in seconds
 
 app:
   services:
-    profile: http://localhost:5002/profile
-    file: http://localhost:5005/file
+    profile: ${PROFILE_SERVICE_URL}
+    file: ${FILE_SERVICE_URL}
+
+# Logging configuration for production
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+    com.tamm.identity: ${LOG_LEVEL:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
