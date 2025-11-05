@@ -14,12 +14,16 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "roles")
 public class Role extends AuditableBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
+    @Column(name = "name", unique = true)
     String name;
+
+    @Column(name = "description")
     String description;
 
     @ToString.Exclude

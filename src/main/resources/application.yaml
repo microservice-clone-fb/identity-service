@@ -8,7 +8,7 @@ spring:
     name: identity-service
   datasource:
     url: ${DB_URL}
-    driverClassName: com.mysql.cj.jdbc.Driver
+    driverClassName: org.postgresql.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
@@ -17,7 +17,7 @@ spring:
     show-sql: ${JPA_SHOW_SQL}
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
   kafka:

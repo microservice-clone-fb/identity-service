@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.Lob;
 import jakarta.persistence.MappedSuperclass;
 
 import com.tamm.identity.utils.AuditListener;
@@ -34,7 +33,6 @@ public abstract class AuditableBaseEntity {
     @Column(name = "is_active")
     private boolean isActive = true;
 
-    @Lob
     @Column(name = "history", columnDefinition = "TEXT")
     private String history;
 
