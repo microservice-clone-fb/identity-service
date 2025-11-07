@@ -36,22 +36,24 @@ public class AuthenticationController {
     }
 
     @PostMapping("/introspect")
-    ApiResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) {
-        log.info("run into authenticationController");
+    public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+        log.info("Introspect endpoint called");
         var result = authenticationService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder().result(result).build();
     }
 
     @PostMapping("/refresh")
-    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request)
+    public ApiResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request)
             throws ParseException, JOSEException {
+        log.info("Refresh token endpoint called");
         var result = authenticationService.refreshToken(request);
         return ApiResponse.<AuthenticationResponse>builder().result(result).build();
     }
 
     @PostMapping("/logout")
-    ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+    public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        log.info("Logout endpoint called");
         authenticationService.logout(request);
-        return ApiResponse.<Void>builder().build();
+        return ApiResponse.<Void>builder().message("Logout successful").build();
     }
 }

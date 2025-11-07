@@ -11,12 +11,13 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthenticationResponse {
-    // ✅ Access Token
+    // ✅ Access Token (short-lived, ~15 minutes)
     String token;
 
     @JsonProperty("expirationTime")
     Long expirationTime; // Unix timestamp in milliseconds
-    // ✅ Refresh Token
+
+    // ✅ Refresh Token (long-lived, ~7 days)
     String refreshToken;
 
     @JsonProperty("refreshTokenExpiration")
