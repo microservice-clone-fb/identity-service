@@ -176,20 +176,20 @@ public class ApplicationInitConfig {
 
         int createdCount = 0;
 
-        //        var attachedRole = entityManager.merge(role);
+        // var attachedRole = entityManager.merge(role);
         var attachedRole = roleRepository.findById(role.getId()).orElseThrow();
 
         for (Permission permission : permissions) {
             // Kiểm tra xem relationship đã tồn tại chưa
             boolean exists = rolePermissionRepository.existsByRoleIdAndPermissionId(
                     attachedRole.getId(),
-                    //                    role.getId(),
+                    // role.getId(),
                     permission.getId());
 
             if (!exists) {
                 // Re-attach permission to current session
 
-                //                var attachedPermission = entityManager.merge(permission);
+                // var attachedPermission = entityManager.merge(permission);
                 var attachedPermission =
                         permissionRepository.findById(permission.getId()).orElseThrow();
 
@@ -197,7 +197,7 @@ public class ApplicationInitConfig {
                 rolePermission.setRole(attachedRole); // attachedRole
                 rolePermission.setPermission(attachedPermission); // attachedPermission
 
-                //                rolePermission = entityManager.merge(rolePermission);
+                // rolePermission = entityManager.merge(rolePermission);
 
                 rolePermissionRepository.save(rolePermission);
                 createdCount++;

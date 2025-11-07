@@ -11,8 +11,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tamm.identity.dto.request.ApiResponse;
 
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalExceptionHandler {
 
     private static final String MIN_ATTRIBUTE = "min";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse> handlingRuntimeException(Exception exception) {
@@ -83,6 +86,46 @@ public class GlobalExceptionHandler {
                         : errorCode.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    /**
+     * Handle FeignException - Parse error response from downstream services
+     */
+    @ExceptionHandler(value = FeignException.class)
+    ResponseEntity<ApiResponse> handlingFeignException(FeignException exception) {
+        log.error("FeignException: {}", exception.getMessage());
+
+        ApiResponse apiResponse = new ApiResponse();
+
+        try {
+            // Try to parse the error response from the downstream service
+            String responseBody = exception.contentUTF8();
+            log.debug("Feign response body: {}", responseBody);
+
+            if (responseBody != null && !responseBody.isEmpty()) {
+                // Parse the JSON response
+                ApiResponse downstreamResponse = objectMapper.readValue(responseBody, ApiResponse.class);
+
+                apiResponse.setCode(downstreamResponse.getCode());
+                apiResponse.setMessage(downstreamResponse.getMessage());
+                apiResponse.setResult(downstreamResponse.getResult());
+            } else {
+                // No response body, use status code
+                apiResponse.setCode(exception.status());
+                apiResponse.setMessage(exception.getMessage());
+            }
+
+            return ResponseEntity.status(exception.status()).body(apiResponse);
+
+        } catch (Exception e) {
+            log.error("Error parsing Feign exception response", e);
+
+            // Fallback to generic error
+            apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
+            apiResponse.setMessage("Error calling external service: " + exception.getMessage());
+
+            return ResponseEntity.status(exception.status()).body(apiResponse);
+        }
     }
 
     private String mapAttribute(String message, Map<String, Object> attributes) {

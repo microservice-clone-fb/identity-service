@@ -2,6 +2,8 @@ package com.tamm.identity.dto.response;
 
 import java.time.LocalDate;
 
+import com.tamm.identity.dto.ContactInfo;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,10 +15,11 @@ import lombok.experimental.FieldDefaults;
 public class UserProfileResponse {
     String id;
     String userId;
-    String username;
-    String email;
+    //    String avatarId;
+    String gender;
     String firstName;
     String lastName;
-    LocalDate dob;
-    String city;
+    LocalDate dateOfBirth;
+    String bio;
+    ContactInfo contactInfo;
 }

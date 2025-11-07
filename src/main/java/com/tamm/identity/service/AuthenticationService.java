@@ -21,6 +21,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.tamm.identity.dto.request.*;
 import com.tamm.identity.dto.response.AuthenticationResponse;
 import com.tamm.identity.dto.response.IntrospectResponse;
+import com.tamm.identity.dto.response.UserProfileResponse;
 import com.tamm.identity.entity.InvalidatedToken;
 import com.tamm.identity.entity.Permission;
 import com.tamm.identity.entity.Role;
@@ -179,7 +180,8 @@ public class AuthenticationService {
 
     /**
      * Verify token - supports both access and refresh tokens
-     * @param token JWT token to verify
+     *
+     * @param token     JWT token to verify
      * @param isRefresh true if verifying refresh token, false for access token
      */
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
@@ -288,32 +290,73 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse login(AuthenticationRequest request) {
-        var userOpt = userRepository.findByUsername(request.getUsername()).or(() -> {
-            var profile = profileClient.findProfileByAnyField(request.getUsername());
-            var userId = profile.getResult() != null ? profile.getResult().getUserId() : null;
+        log.info("Login attempt for username: {}", request.getUsername());
 
-            if (userId == null) {
-                return Optional.empty();
-            }
-            return userRepository.findById(userId);
-        });
+        User user = null;
+        UserProfileResponse userProfile = null;
 
-        User user;
+        // Try to find user by username in database first
+        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
+
         if (userOpt.isPresent()) {
+            // Case 1: Found user by username directly
             user = userOpt.get();
+            log.info("User found by username: id={}, username={}", user.getId(), user.getUsername());
+
+            // Get profile from ProfileService using userId
+            try {
+                ApiResponse<UserProfileResponse> profileResponse = profileClient.getProfileByUserId(user.getId());
+                userProfile = profileResponse.getResult();
+                log.info("Profile fetched by userId: {}", userProfile != null ? userProfile.getUserId() : "null");
+            } catch (Exception e) {
+                log.warn("Failed to fetch profile for userId: {}", user.getId(), e);
+                throw new AppException(ErrorCode.LOGIN_FAILED);
+            }
         } else {
+            // Case 2: User not found by username, try to find by email/phone via
+            // ProfileService
+            log.info("Username not found directly, searching by email/phone in profile service");
+            try {
+                ApiResponse<UserProfileResponse> profileResponse =
+                        profileClient.findProfileByAnyField(request.getUsername());
+                userProfile = profileResponse.getResult();
+
+                if (userProfile != null && userProfile.getUserId() != null) {
+                    log.info("Profile found by any field, userId: {}", userProfile.getUserId());
+
+                    // Get user from database using userId from profile
+                    user = userRepository.findById(userProfile.getUserId()).orElseThrow(() -> {
+                        return new AppException(ErrorCode.LOGIN_FAILED);
+                    });
+
+                    log.info("User found by userId from profile: id={}, username={}", user.getId(), user.getUsername());
+                } else {
+                    log.warn("No profile found for username: {}", request.getUsername());
+                }
+            } catch (Exception e) {
+                log.error("Failed to find profile by any field for: {}", request.getUsername(), e);
+                throw new AppException(ErrorCode.LOGIN_FAILED);
+            }
+        }
+
+        // Validate user was found
+        if (user == null) {
+            log.error("Login failed for username: {}", request.getUsername());
             throw new AppException(ErrorCode.LOGIN_FAILED);
         }
 
+        // Validate password
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (!authenticated) {
+            log.warn("Invalid password for user: {}", user.getUsername());
             throw new AppException(ErrorCode.LOGIN_FAILED);
         }
+
+        log.info("Authentication successful for user: {}", user.getUsername());
 
         // ✅ Generate both access and refresh tokens
         String accessToken = generateAccessToken(user);
         String refreshToken = generateRefreshToken(user);
-
         long accessTokenExpiration =
                 Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli();
         long refreshTokenExpiration =
@@ -326,6 +369,7 @@ public class AuthenticationService {
                 .refreshTokenExpiration(refreshTokenExpiration)
                 .authenticated(true)
                 .userId(user.getId())
+                .userProfile(userProfile)
                 .build();
     }
 
@@ -335,7 +379,6 @@ public class AuthenticationService {
 
             String jti = signToken.getJWTClaimsSet().getJWTID();
             Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
-
             InvalidatedToken invalidatedToken =
                     InvalidatedToken.builder().id(jti).expiryTime(expiryTime).build();
 

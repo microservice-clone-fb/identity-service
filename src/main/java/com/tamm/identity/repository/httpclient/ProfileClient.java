@@ -25,4 +25,7 @@ public interface ProfileClient {
 
     @GetMapping(value = "/internal/users/by-any-field/{username}")
     ApiResponse<UserProfileResponse> findProfileByAnyField(@PathVariable String username);
+
+    @GetMapping("/internal/users/{userId}")
+    ApiResponse<UserProfileResponse> getProfileByUserId(@PathVariable String userId);
 }
