@@ -7,7 +7,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,10 +43,6 @@ public class ApplicationInitConfig {
     static final String USER_PASSWORD = "user";
 
     @Bean
-    @ConditionalOnProperty(
-            prefix = "spring",
-            value = "datasource.driverClassName",
-            havingValue = "com.mysql.cj.jdbc.Driver")
     ApplicationRunner applicationRunner(
             UserRepository userRepository,
             RoleRepository roleRepository,

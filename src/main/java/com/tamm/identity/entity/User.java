@@ -14,14 +14,19 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(
+        name = "users",
+        indexes = {@Index(name = "idx_username", columnList = "username")})
 public class User extends AuditableBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
     String id;
 
-    @Column(name = "username", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
+    @Column(name = "username", unique = true, nullable = false, length = 255)
     String username;
 
+    @Column(name = "password", nullable = false)
     String password;
 
     @ToString.Exclude

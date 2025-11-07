@@ -10,35 +10,30 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-// @Table(name = "user_roles")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-// @EqualsAndHashCode
-
-// @IdClass(UserRole.UserRoleId.class)
 @Entity
 @Table(
         name = "users_roles",
-        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "role_id"})})
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_user_role",
+                    columnNames = {"user_id", "role_id"})
+        },
+        indexes = {
+            @Index(name = "idx_user_role_user", columnList = "user_id"),
+            @Index(name = "idx_user_role_role", columnList = "role_id")
+        })
 public class UserRole extends AuditableBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
     String id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_user_role_user"))
     User user;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id", nullable = false, foreignKey = @ForeignKey(name = "fk_user_role_role"))
     Role role;
-
-    //    @EqualsAndHashCode
-    //    @AllArgsConstructor
-    //    @NoArgsConstructor
-    //    @Builder
-    //    @Data
-    //    public static class UserRoleId implements Serializable {
-    //        private User user;
-    //        private Role role;
-    //    }
 }

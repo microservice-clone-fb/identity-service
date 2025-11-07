@@ -14,13 +14,19 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(
+        name = "permissions",
+        indexes = {@Index(name = "idx_permission_name", columnList = "name")})
 public class Permission extends AuditableBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
     String id;
 
+    @Column(name = "name", unique = true, nullable = false, length = 100)
     String name;
 
+    @Column(name = "description", length = 500)
     String description;
 
     @ToString.Exclude

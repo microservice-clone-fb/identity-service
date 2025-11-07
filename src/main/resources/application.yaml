@@ -7,10 +7,10 @@ spring:
   application:
     name: identity-service
   datasource:
-    url: "jdbc:mysql://localhost:9002/clone_fb_identity"
-    driverClassName: "com.mysql.cj.jdbc.Driver"
-    username: root
-    password: root
+    url: "jdbc:postgresql://localhost:5432/clone_fb_identity"
+    driverClassName: "org.postgresql.Driver"
+    username: postgres
+    password: "123456"
   jpa:
     hibernate:
       ddl-auto: update
