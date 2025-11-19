@@ -2,11 +2,11 @@ package com.tamm.identity.service;
 
 import java.util.List;
 
-import com.tamm.identity.entity.Role;
 import org.springframework.stereotype.Service;
 
 import com.tamm.identity.dto.request.RoleRequest;
 import com.tamm.identity.dto.response.RoleResponse;
+import com.tamm.identity.entity.Role;
 import com.tamm.identity.mapper.RoleMapper;
 import com.tamm.identity.repository.PermissionRepository;
 import com.tamm.identity.repository.RoleRepository;
@@ -35,7 +35,7 @@ public class RoleService {
         return roleMapper.toRoleResponse(role);
     }
 
-    public Role getRoleEntityById(String id){
+    public Role getRoleEntityById(String id) {
         return roleRepository.findById(id).orElse(null);
     }
 
