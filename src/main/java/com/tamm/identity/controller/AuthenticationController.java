@@ -2,6 +2,7 @@ package com.tamm.identity.controller;
 
 import java.text.ParseException;
 
+import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 
 import com.nimbusds.jose.JOSEException;
@@ -35,6 +36,12 @@ public class AuthenticationController {
         return ApiResponse.<AuthenticationResponse>builder().result(result).build();
     }
 
+    @GetMapping("/get-profile-by-userid/{userId}")
+    ApiResponse<AuthenticationResponse> getProfileByUserId(@PathVariable String userId) {
+        var result = authenticationService.getProfileById(userId);
+        return ApiResponse.<AuthenticationResponse>builder().result(result).build();
+    }
+
     @PostMapping("/introspect")
     public ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
         log.info("Introspect endpoint called");
@@ -51,9 +58,50 @@ public class AuthenticationController {
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
-        log.info("Logout endpoint called");
-        authenticationService.logout(request);
+    public ApiResponse<Void> logout(
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestBody(required = false) LogoutRequest request)
+            throws ParseException, JOSEException {
+        //        log.info("Logout endpoint called");
+        //        log.info("Authorization header: {}", authHeader);
+        //        log.info("Received logout request: {}", request);
+
+        // Build logout request with tokens from different sources
+        String accessToken = null;
+        String refreshToken = null;
+
+        // Priority 1: Get access token from Authorization header
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+            //            log.info("Access token extracted from Authorization header");
+        }
+
+        // Priority 2: Get tokens from request body
+        if (request != null) {
+            if (accessToken == null
+                    && request.getToken() != null
+                    && !request.getToken().trim().isEmpty()) {
+                accessToken = request.getToken();
+                //                log.info("Access token extracted from request body");
+            }
+            if (request.getRefreshToken() != null
+                    && !request.getRefreshToken().trim().isEmpty()) {
+                refreshToken = request.getRefreshToken();
+                //                log.info("Refresh token extracted from request body");
+            }
+        }
+
+        // Build logout request
+        LogoutRequest logoutRequest = LogoutRequest.builder()
+                .token(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+
+        //        log.info(
+        //                "Logout request prepared - hasAccessToken: {}, hasRefreshToken: {}",
+        //                accessToken != null,
+        //                refreshToken != null);
+        authenticationService.logout(logoutRequest);
         return ApiResponse.<Void>builder().message("Logout successful").build();
     }
 }

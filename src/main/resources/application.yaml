@@ -27,7 +27,11 @@ jwt:
   valid-duration: 1800 # 30 min in seconds
   refreshable-duration: 604800 # 7 days in seconds
 
+role:
+    default: b16465a2-12db-49c0-bd26-b30d1db8cd79
 app:
   services:
     profile: http://localhost:5002/profile
+    post: http://localhost:5004/post
     file: http://localhost:5005/file
+    relationship: http://localhost:5007/relationship

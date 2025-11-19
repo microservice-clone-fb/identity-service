@@ -29,5 +29,6 @@ public interface ValidatedRefreshTokenRepository extends JpaRepository<Validated
      * Delete all refresh tokens for a user
      * Used when user changes password or security reset
      */
+    // @Transactional
     void deleteByUserId(String userId);
 }

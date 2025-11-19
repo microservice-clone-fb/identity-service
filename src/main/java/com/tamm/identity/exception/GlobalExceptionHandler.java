@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiResponse> handlingAppException(AppException exception) {
+        log.error("Exception: ", exception);
         ErrorCode errorCode = exception.getErrorCode();
         ApiResponse apiResponse = new ApiResponse();
 
@@ -49,6 +50,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException exception) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+        log.error("Exception: ", exception);
 
         return ResponseEntity.status(errorCode.getStatusCode())
                 .body(ApiResponse.builder()
@@ -60,21 +62,28 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handlingValidation(MethodArgumentNotValidException exception) {
         String enumKey = exception.getFieldError().getDefaultMessage();
+        log.error("Validation Exception: ", exception);
 
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
         Map<String, Object> attributes = null;
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
 
-            var constraintViolation =
-                    exception.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+        // Check if the validation error is about token being blank/null
+        if (enumKey != null && enumKey.contains("Token cannot be blank")) {
+            errorCode = ErrorCode.UNAUTHENTICATED;
+        } else {
+            try {
+                errorCode = ErrorCode.valueOf(enumKey);
 
-            attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+                var constraintViolation =
+                        exception.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
 
-            log.info(attributes.toString());
+                attributes = constraintViolation.getConstraintDescriptor().getAttributes();
 
-        } catch (IllegalArgumentException e) {
+                log.info(attributes.toString());
 
+            } catch (IllegalArgumentException e) {
+                // Keep default INVALID_KEY if enum not found
+            }
         }
 
         ApiResponse apiResponse = new ApiResponse();
