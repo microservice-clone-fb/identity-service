@@ -2,7 +2,6 @@ package com.tamm.identity.controller;
 
 import java.text.ParseException;
 
-import lombok.Getter;
 import org.springframework.web.bind.annotation.*;
 
 import com.nimbusds.jose.JOSEException;

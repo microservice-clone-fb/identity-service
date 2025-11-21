@@ -1,8 +1,8 @@
 package com.tamm.identity.dto.response.relationshipuser;
 
-import lombok.*;
-
 import java.util.Set;
+
+import lombok.*;
 
 @Getter
 @Setter

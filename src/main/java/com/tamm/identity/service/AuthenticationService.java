@@ -5,17 +5,12 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import com.tamm.identity.entity.*;
-import com.tamm.identity.repository.httpclient.RelationshipClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -29,6 +24,7 @@ import com.tamm.identity.dto.request.*;
 import com.tamm.identity.dto.response.AuthenticationResponse;
 import com.tamm.identity.dto.response.IntrospectResponse;
 import com.tamm.identity.dto.response.UserProfileResponse;
+import com.tamm.identity.entity.*;
 import com.tamm.identity.exception.AppException;
 import com.tamm.identity.exception.ErrorCode;
 import com.tamm.identity.mapper.UserMapper;
@@ -36,6 +32,7 @@ import com.tamm.identity.repository.UserRepository;
 import com.tamm.identity.repository.ValidatedRefreshTokenRepository;
 import com.tamm.identity.repository.httpclient.FileClient;
 import com.tamm.identity.repository.httpclient.ProfileClient;
+import com.tamm.identity.repository.httpclient.RelationshipClient;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +61,7 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.valid-duration}")
     protected long VALID_DURATION; // Access token duration (seconds) - 15 minutes
+
     @NonFinal
     @Value("${role.default}")
     protected String NORMAL_USER_ROLE;
@@ -141,7 +139,6 @@ public class AuthenticationService {
         return stringJoiner.toString();
     }
 
-
     public AuthenticationResponse register(RegistrationRequest request) {
         log.info("Registering new user: {}", request.getEmail());
 
@@ -160,10 +157,7 @@ public class AuthenticationService {
         // Create user in identity service
         Role role = roleService.getRoleEntityById(NORMAL_USER_ROLE);
         User user = userMapper.toUser(request);
-        UserRole userRole = UserRole.builder()
-                .role(role)
-                .user(user)
-                .build();
+        UserRole userRole = UserRole.builder().role(role).user(user).build();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setUserRoles(List.of(userRole));
         user = userRepository.save(user);
@@ -186,7 +180,7 @@ public class AuthenticationService {
 
         // tao user relationship
         boolean isCreated = relationshipClient.createUser(user.getId());
-        if(!isCreated){
+        if (!isCreated) {
             System.out.println("Error while creating user relationship for userId: " + user.getId());
             throw new AppException(ErrorCode.USER_CANNOT_CREATED);
         }
@@ -238,8 +232,7 @@ public class AuthenticationService {
         log.info("Getting profile for userId: {}", userId);
 
         // Find user by userId
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         // Get profile from profile service
         ApiResponse<UserProfileResponse> profileResponse = profileClient.getProfileByUserId(userId);
@@ -278,9 +271,9 @@ public class AuthenticationService {
             // Case 1: Found user by username directly
             user = userOpt.get();
             log.info("User found by username: id={}", user.getId());
-//            user.getUserRoles().forEach(userRole -> {
-//                System.out.println("Role: " + userRole.getRole().getName());
-//            });
+            //            user.getUserRoles().forEach(userRole -> {
+            //                System.out.println("Role: " + userRole.getRole().getName());
+            //            });
             // Get profile from ProfileService using userId
             try {
                 ApiResponse<UserProfileResponse> profileResponse = profileClient.getProfileByUserId(user.getId());
@@ -512,19 +505,19 @@ public class AuthenticationService {
         // ✅ Step 6: Save new refresh token to DB
         String newJti = extractJTI(newRefreshToken);
         Date newExpiryTime = Instant.now()
-                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                .atZone(java.time.ZoneId.systemDefault())
-                .toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDateTime()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toInstant()
-                .plusSeconds(REFRESHABLE_DURATION)
-                .toEpochMilli()
-                > 0
+                                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toInstant()
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDateTime()
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toInstant()
+                                .plusSeconds(REFRESHABLE_DURATION)
+                                .toEpochMilli()
+                        > 0
                 ? new Date(Instant.now()
-                .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
-                .toEpochMilli())
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
                 : new Date();
 
         ValidatedRefreshToken newValidatedToken = ValidatedRefreshToken.builder()
@@ -580,7 +573,7 @@ public class AuthenticationService {
             String accessToken = jwsObject.serialize();
 
             // ✅ SET SECURITY CONTEXT ngay sau khi generate
-//            setSecurityContext(user, accessToken);
+            //            setSecurityContext(user, accessToken);
 
             log.debug("Access token generated for userId: {}", user.getId());
             return accessToken;
@@ -711,6 +704,7 @@ public class AuthenticationService {
 
         return signedJWT;
     }
+
     public void printSecurityContext() {
         SecurityContext context = SecurityContextHolder.getContext();
 

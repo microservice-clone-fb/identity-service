@@ -7,7 +7,7 @@ spring:
   application:
     name: identity-service
   datasource:
-    url: "jdbc:postgresql://localhost:5432/clone_fb_identity"
+    url: "jdbc:postgresql://localhost:5432/postgres"
     driverClassName: "org.postgresql.Driver"
     username: postgres
     password: "123456"
@@ -28,7 +28,7 @@ jwt:
   refreshable-duration: 604800 # 7 days in seconds
 
 role:
-    default: b16465a2-12db-49c0-bd26-b30d1db8cd79
+    default: facdb5cf-f3d5-4470-ad91-5f151a9e5a8b
 app:
   services:
     profile: http://localhost:5002/profile
