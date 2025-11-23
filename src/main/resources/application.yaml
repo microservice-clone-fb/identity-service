@@ -35,3 +35,4 @@ app:
     post: http://localhost:5004/post
     file: http://localhost:5005/file
     relationship: http://localhost:5007/relationship
+    chat: http://localhost:5010

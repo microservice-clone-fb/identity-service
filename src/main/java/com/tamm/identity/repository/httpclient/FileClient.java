@@ -1,5 +1,6 @@
 package com.tamm.identity.repository.httpclient;
 
+import com.tamm.identity.dto.response.file.FileMnmt;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -13,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.tamm.identity.configuration.AuthenticationRequestInterceptor;
 import com.tamm.identity.dto.request.ApiResponse;
 import com.tamm.identity.dto.request.UploadFileRequest;
-import com.tamm.identity.dto.response.FileResponse;
+import com.tamm.identity.dto.response.file.FileResponse;
 
 @FeignClient(
         name = "file-service",
@@ -40,4 +41,9 @@ public interface FileClient {
      */
     @GetMapping(value = "/internal/media/download/{fileName}")
     ResponseEntity<Resource> downloadMedia(@PathVariable("fileName") String fileName);
+    @GetMapping("/media/view/all-with-type/{userId}/{type}")       // laasy ảnh bơi type vd avatar, wallpaper,...
+    ApiResponse<FileMnmt> getAllFileWithTypeAndUserId(@PathVariable String userId,@PathVariable String type);
+
+    @GetMapping("/media/view/all/{userId}")    // laasy full anh cua user
+    ApiResponse<FileMnmt> getAllFileByUserId(@PathVariable String userId);
 }

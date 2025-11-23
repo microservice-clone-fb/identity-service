@@ -35,8 +35,8 @@ public class RoleService {
         return roleMapper.toRoleResponse(role);
     }
 
-    public Role getRoleEntityById(String id) {
-        return roleRepository.findById(id).orElse(null);
+    public Role getRoleEntityById(String name) {
+        return roleRepository.findByName(name).orElse(null);
     }
 
     public Role getRoleEntityByName(String name) {

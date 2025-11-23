@@ -1,4 +1,4 @@
-package com.tamm.identity.dto.response;
+package com.tamm.identity.dto.response.file;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

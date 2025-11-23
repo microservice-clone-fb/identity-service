@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import com.tamm.identity.dto.request.chat.CreateUserRequest;
+import com.tamm.identity.dto.response.chat.UserDTO;
+import com.tamm.identity.repository.httpclient.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,6 +56,7 @@ public class AuthenticationService {
     FileClient fileClient;
     RelationshipClient relationshipClient;
     RoleService roleService;
+    ChatClient chatClient;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -184,6 +188,14 @@ public class AuthenticationService {
             System.out.println("Error while creating user relationship for userId: " + user.getId());
             throw new AppException(ErrorCode.USER_CANNOT_CREATED);
         }
+
+        // tao chat
+        boolean isCreatedChatNode = chatClient.createUser(new CreateUserRequest(user.getId())) != null;
+        if (!isCreatedChatNode) {
+            System.out.println("Error while creating chat node for userId: " + user.getId());
+            throw new AppException(ErrorCode.USER_CANNOT_CREATED);
+        }
+
 
         // Generate tokens
         String accessToken = generateAccessToken(user);
