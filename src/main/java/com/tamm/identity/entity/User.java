@@ -30,6 +30,11 @@ public class User extends AuditableBaseEntity {
     String password;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     List<UserRole> userRoles;
+
 }
