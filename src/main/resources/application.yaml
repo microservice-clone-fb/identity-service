@@ -28,7 +28,7 @@ jwt:
   refreshable-duration: 604800 # 7 days in seconds
 
 role:
-    default: f0149ff2-6f00-472c-b710-bfed7781e684
+    default: USER
 app:
   services:
     profile: http://localhost:5002/profile
